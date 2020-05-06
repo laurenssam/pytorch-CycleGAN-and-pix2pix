@@ -4,6 +4,7 @@ import torch
 import numpy as np
 from PIL import Image
 import os
+from torchvision.datasets import Cityscapes
 
 
 def tensor2im(input_image, imtype=np.uint8):
@@ -21,10 +22,18 @@ def tensor2im(input_image, imtype=np.uint8):
         image_numpy = image_tensor[0].cpu().float().numpy()  # convert it into a numpy array
         if image_numpy.shape[0] == 1:  # grayscale to RGB
             image_numpy = np.tile(image_numpy, (3, 1, 1))
-        image_numpy = (np.transpose(image_numpy, (1, 2, 0)) + 1) / 2.0 * 255.0  # post-processing: tranpose and scaling
+        # image_numpy = (np.transpose(image_numpy, (1, 2, 0)) + 1) / 2.0 * 255.0  # post-processing: tranpose and scaling
+        image_numpy = np.transpose(image_numpy, (1, 2, 0)) * 255.0
     else:  # if it is a numpy array, do nothing
         image_numpy = input_image
     return image_numpy.astype(imtype)
+
+def mask_to_img(mask):
+    height, width = mask.squeeze().shape
+    new_img = torch.zeros(height , width, 3)
+    for cls in Cityscapes.classes:
+        new_img[mask == cls[2]] = torch.FloatTensor(list(cls[-1]))
+    return new_img.numpy().astype(np.uint8)
 
 
 def diagnose_network(net, name='network'):

@@ -41,6 +41,8 @@ class BaseModel(ABC):
         self.visual_names = []
         self.optimizers = []
         self.image_paths = []
+        self.losses = []
+        self.ious = []
         self.metric = 0  # used for learning rate policy 'plateau'
 
     @staticmethod
@@ -74,6 +76,12 @@ class BaseModel(ABC):
     def optimize_parameters(self):
         """Calculate losses, gradients, and update network weights; called in every training iteration"""
         pass
+
+    def store_losses(self, losses):
+        self.losses.append((losses))
+
+    def store_ious(self, ious):
+        self.ious.append((ious))
 
     def setup(self, opt):
         """Load and print networks; create schedulers

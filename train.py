@@ -19,17 +19,21 @@ See training and test tips at: https://github.com/junyanz/pytorch-CycleGAN-and-p
 See frequently asked questions at: https://github.com/junyanz/pytorch-CycleGAN-and-pix2pix/blob/master/docs/qa.md
 """
 import time
+
+from datasets.get_cityscapes import get_loaders_cityscapes
 from options.train_options import TrainOptions
 from data import create_dataset
 from models import create_model
+from util.evaluation import evaluate
+from util.transforms import joint_transform_train
 from util.visualizer import Visualizer
+from pathlib import Path
 
 if __name__ == '__main__':
     opt = TrainOptions().parse()   # get training options
-    dataset = create_dataset(opt)  # create a dataset given opt.dataset_mode and other options
-    dataset_size = len(dataset)    # get the number of images in the dataset.
-    print('The number of training images = %d' % dataset_size)
-
+    # dataset = create_dataset(opt)  # create a dataset given opt.dataset_mode and other options
+    root_path = Path("/Users/laurenssamson/Documents/Projects/data/Cityscapes/leftImg8bit_trainvaltest")
+    training_loader, val_loader, train_eval_loader = get_loaders_cityscapes(root_path, opt)
     model = create_model(opt)      # create a model given opt.model and other options
     model.setup(opt)               # regular setup: load and print networks; create schedulers
     visualizer = Visualizer(opt)   # create a visualizer that display/save images and plots
@@ -40,8 +44,9 @@ if __name__ == '__main__':
         iter_data_time = time.time()    # timer for data loading per iteration
         epoch_iter = 0                  # the number of training iterations in current epoch, reset to 0 every epoch
         visualizer.reset()              # reset the visualizer: make sure it saves the results to HTML at least once every epoch
-
-        for i, data in enumerate(dataset):  # inner loop within one epoch
+        evaluate(train_eval_loader, val_loader, model)
+        for i, data in enumerate(training_loader):  # inner loop within one epoch
+            data = {"A": data[0], "B": data[1]}
             iter_start_time = time.time()  # timer for computation per iteration
             if total_iters % opt.print_freq == 0:
                 t_data = iter_start_time - iter_data_time
@@ -60,8 +65,6 @@ if __name__ == '__main__':
                 losses = model.get_current_losses()
                 t_comp = (time.time() - iter_start_time) / opt.batch_size
                 visualizer.print_current_losses(epoch, epoch_iter, losses, t_comp, t_data)
-                if opt.display_id > 0:
-                    visualizer.plot_current_losses(epoch, float(epoch_iter) / dataset_size, losses)
 
             if total_iters % opt.save_latest_freq == 0:   # cache our latest model every <save_latest_freq> iterations
                 print('saving the latest model (epoch %d, total_iters %d)' % (epoch, total_iters))
