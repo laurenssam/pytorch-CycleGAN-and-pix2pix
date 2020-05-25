@@ -2,12 +2,6 @@ import torch
 import numpy as np
 from torchvision.datasets import Cityscapes
 
-# Adapted from score written by wkentaro
-# https://github.com/wkentaro/pytorch-fcn/blob/master/torchfcn/utils.py
-
-import numpy as np
-
-
 class runningScore(object):
     def __init__(self, n_classes):
         self.n_classes = n_classes
@@ -69,8 +63,6 @@ def run_inference(data_loader, model, print_freq=50):
         prediction_argmax = torch.argmax(prediction.cpu(), dim=1)
         prediction_argmax[label == 255] = 255
         scores.update(label.cpu().numpy(), prediction_argmax.numpy())
-        if i == 10:
-            break
         assert label.shape != prediction_argmax, \
             f"shape of label and prediction are not the same (label/pred): {label.shape}/{prediction_argmax.shape}"
         if i > 0 and i % print_freq == 0:
@@ -83,7 +75,6 @@ def get_prediction(input_image, model):
     with torch.no_grad():
         prediction = model.netG(input_image)
     return prediction
-
 
 def evaluate(train_loader, val_loader, model):
     train_id_to_name = {cls[2]:cls[0] for cls in Cityscapes.classes if not cls[6]}
