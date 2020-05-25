@@ -60,7 +60,7 @@ class SegmentationModel(BaseModel):
         self.num_classes = opt.output_nc
         if self.isTrain:
             # define loss functions
-            self.criterion = torch.nn.CrossEntropyLoss(ignore_index=255, weight=opt.class_weights)
+            self.criterion = torch.nn.CrossEntropyLoss(ignore_index=255, weight=opt.class_weights.to(self.device))
             # initialize optimizers; schedulers will be automatically created by function <BaseModel.setup>.
             self.optimizer_G = torch.optim.Adam(self.netG.parameters(), lr=opt.lr, weight_decay=1e-5)
             self.optimizers.append(self.optimizer_G)
