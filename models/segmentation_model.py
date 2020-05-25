@@ -33,7 +33,7 @@ class SegmentationModel(BaseModel):
         By default, we use vanilla GAN loss, UNet with batchnorm, and aligned datasets.
         """
         # changing the default values to match the pix2pix paper (https://phillipi.github.io/pix2pix/)
-        parser.set_defaults(norm='batch', netG='unet_256', dataset_mode='aligned')
+        # parser.set_defaults(norm='batch', netG='unet_256', dataset_mode='aligned')
         if is_train:
             pass
         return parser
