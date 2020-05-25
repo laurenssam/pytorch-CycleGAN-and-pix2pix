@@ -36,9 +36,9 @@ class BaseModel(ABC):
         self.isTrain = opt.isTrain
         self.device = torch.device('cuda:{}'.format(self.gpu_ids[0])) if self.gpu_ids else torch.device('cpu')  # get device name: CPU or GPU
         self.save_dir = Path(opt.checkpoints_dir) / Path(opt.name)  # save all the checkpoints to save_dir
-        self.save_dir.mkdir(parents=True, exist_ok=True)
         if self.opt.run_colab:
             self.save_dir = Path("/content/gdrive/My Drive/Segmentation") / self.save_dir
+        self.save_dir.mkdir(parents=True, exist_ok=True)
         self.loss_names = []
         self.model_names = []
         self.visual_names = []
