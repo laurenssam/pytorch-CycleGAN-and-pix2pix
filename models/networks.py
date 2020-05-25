@@ -150,7 +150,7 @@ def define_G(input_nc, output_nc, ngf, netG, norm='batch', init_type='normal', i
     if netG == 'resnet_9blocks':
         net = ResnetGenerator(input_nc, output_nc, ngf, norm_layer=norm_layer, n_blocks=9)
     elif netG == 'deeplab':
-        net = DeepLab(backbone='mobile_net', num_classes=output_nc)
+        net = DeepLab(backbone='xception', num_classes=output_nc)
     elif netG == 'resnet_6blocks':
         net = ResnetGenerator(input_nc, output_nc, ngf, norm_layer=norm_layer, n_blocks=6)
     elif netG == 'unet_128':
