@@ -68,7 +68,7 @@ def run_inference(data_loader, model, print_freq=50):
         losses.append(calculate_loss(prediction, label, loss_function))
         prediction_argmax = torch.argmax(prediction.cpu(), dim=1)
         prediction_argmax[label == 255] = 255
-        scores.update(label.numpy(), prediction_argmax.numpy())
+        scores.update(label.cpu().numpy(), prediction_argmax.numpy())
         if i == 10:
             break
         assert label.shape != prediction_argmax, \
