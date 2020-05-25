@@ -1,10 +1,14 @@
 """This module contains simple helper functions """
 from __future__ import print_function
+
+from pathlib import Path
+
 import torch
 import numpy as np
 from PIL import Image
 import os
 from torchvision.datasets import Cityscapes
+import pickle
 
 
 def tensor2im(input_image, imtype=np.uint8):
@@ -27,6 +31,24 @@ def tensor2im(input_image, imtype=np.uint8):
     else:  # if it is a numpy array, do nothing
         image_numpy = input_image
     return image_numpy.astype(imtype)
+
+def calculate_class_weights(val_loader, num_classes, alpha):
+    file_path = Path(f"classweight_{alpha}.p")
+    if file_path.exists():
+        return pickle.load(open(file_path, "rb"))
+    counter = {cls_idx: 0 for cls_idx in range(num_classes)}
+    pixel_count = 0
+    count = 0
+    for _, mask in val_loader:
+        for cls_idx in range(num_classes):
+            count_cls = (mask == cls_idx).sum().item()
+            counter[cls_idx] += count_cls
+            pixel_count += count_cls
+        count += 1
+    weights = [(1./(float(count)/pixel_count))**(alpha) for count in counter.values()]
+    weights = torch.FloatTensor(weights)
+    pickle.dump(weights, open(file_path, "wb"))
+    return weights
 
 def mask_to_img(mask):
     height, width = mask.squeeze().shape

@@ -26,19 +26,21 @@ from data import create_dataset
 from models import create_model
 from util.evaluation import evaluate
 from util.transforms import joint_transform_train
+from util.util import calculate_class_weights
 from util.visualizer import Visualizer
 from pathlib import Path
+import torch
 
 if __name__ == '__main__':
     opt = TrainOptions().parse()   # get training options
     # dataset = create_dataset(opt)  # create a dataset given opt.dataset_mode and other options
     root_path = Path("/Users/laurenssamson/Documents/Projects/data/Cityscapes/leftImg8bit_trainvaltest")
     training_loader, val_loader, train_eval_loader = get_loaders_cityscapes(root_path, opt)
+    opt.class_weights = calculate_class_weights(val_loader, opt.output_nc, opt.alpha)
     model = create_model(opt)      # create a model given opt.model and other options
     model.setup(opt)               # regular setup: load and print networks; create schedulers
     visualizer = Visualizer(opt)   # create a visualizer that display/save images and plots
     total_iters = 0                # the total number of training iterations
-
     for epoch in range(opt.epoch_count, opt.n_epochs + opt.n_epochs_decay + 1):    # outer loop for different epochs; we save the model by <epoch_count>, <epoch_count>+<save_latest_freq>
         epoch_start_time = time.time()  # timer for entire epoch
         iter_data_time = time.time()    # timer for data loading per iteration
@@ -68,14 +70,12 @@ if __name__ == '__main__':
 
             if total_iters % opt.save_latest_freq == 0:   # cache our latest model every <save_latest_freq> iterations
                 print('saving the latest model (epoch %d, total_iters %d)' % (epoch, total_iters))
-                save_suffix = 'iter_%d' % total_iters if opt.save_by_iter else 'latest'
-                model.save_networks(save_suffix)
-
+                model.save_checkpoint(epoch, True)
             iter_data_time = time.time()
         if epoch % opt.save_epoch_freq == 0:              # cache our model every <save_epoch_freq> epochs
             print('saving the model at the end of epoch %d, iters %d' % (epoch, total_iters))
-            model.save_networks('latest')
-            model.save_networks(epoch)
+            model.save_checkpoint('latest', True)
+            model.save_checkpoint(epoch, False)
 
         print('End of epoch %d / %d \t Time Taken: %d sec' % (epoch, opt.n_epochs + opt.n_epochs_decay, time.time() - epoch_start_time))
         model.update_learning_rate()                     # update learning rates at the end of every epoch.

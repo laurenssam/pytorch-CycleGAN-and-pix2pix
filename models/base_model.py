@@ -1,9 +1,11 @@
 import os
+from pathlib import Path
+
 import torch
 from collections import OrderedDict
 from abc import ABC, abstractmethod
 from . import networks
-
+from matplotlib import pyplot as plt
 
 class BaseModel(ABC):
     """This class is an abstract base class (ABC) for models.
@@ -33,9 +35,7 @@ class BaseModel(ABC):
         self.gpu_ids = opt.gpu_ids
         self.isTrain = opt.isTrain
         self.device = torch.device('cuda:{}'.format(self.gpu_ids[0])) if self.gpu_ids else torch.device('cpu')  # get device name: CPU or GPU
-        self.save_dir = os.path.join(opt.checkpoints_dir, opt.name)  # save all the checkpoints to save_dir
-        if opt.preprocess != 'scale_width':  # with [scale_width], input images might have different sizes, which hurts the performance of cudnn.benchmark.
-            torch.backends.cudnn.benchmark = True
+        self.save_dir = Path(opt.checkpoints_dir) / Path(opt.name)  # save all the checkpoints to save_dir
         self.loss_names = []
         self.model_names = []
         self.visual_names = []
@@ -78,10 +78,28 @@ class BaseModel(ABC):
         pass
 
     def store_losses(self, losses):
-        self.losses.append((losses))
+        self.losses.append(losses)
 
     def store_ious(self, ious):
-        self.ious.append((ious))
+        self.ious.append(ious)
+
+    def plot_loss(self):
+        train_loss, val_loss = zip(*self.losses)
+        plt.plot(train_loss, 'ro', label="Train loss")
+        plt.plot(val_loss, 'bo', label="Val loss")
+        plt.title("Loss per epoch")
+        plt.legend(loc="upper right")
+        plt.savefig(self.save_dir / "loss.png")
+        plt.close()
+
+    def plot_iou(self):
+        train_iou, val_iou = zip(*self.ious)
+        plt.plot(train_iou, 'ro', label="Train IoU")
+        plt.plot(val_iou, 'bo', label="Val IoU")
+        plt.title("IoU per epoch")
+        plt.legend(loc="lower right")
+        plt.savefig(self.save_dir / "IoU.png")
+        plt.close()
 
     def setup(self, opt):
         """Load and print networks; create schedulers
@@ -92,8 +110,15 @@ class BaseModel(ABC):
         if self.isTrain:
             self.schedulers = [networks.get_scheduler(optimizer, opt) for optimizer in self.optimizers]
         if not self.isTrain or opt.continue_train:
-            load_suffix = 'iter_%d' % opt.load_iter if opt.load_iter > 0 else opt.epoch
-            self.load_networks(load_suffix)
+            checkpoint = torch.load(self.save_dir / "latest_checkpoint.pth", map_location=self.device)
+            opt.epoch_count = int(checkpoint['epoch'])
+            for i, name in enumerate(self.model_names):
+                net = getattr(self, 'net' + name)
+                net.load_state_dict(checkpoint[f"net_{name}"])
+                optimizer = getattr(self, 'optimizer_' + name)
+                optimizer.load_state_dict(checkpoint[f"optimizer_{name}"])
+                self.schedulers[i].load_state_dict(checkpoint[f"scheduler_{name}"])
+                print(f"Loaded the model net_{name}")
         self.print_networks(opt.verbose)
 
     def eval(self):
@@ -148,15 +173,35 @@ class BaseModel(ABC):
                 errors_ret[name] = float(getattr(self, 'loss_' + name))  # float(...) works for both scalar tensor and float number
         return errors_ret
 
-    def save_networks(self, epoch):
+    def save_checkpoint(self, epoch, latest):
         """Save all the networks to the disk.
 
         Parameters:
             epoch (int) -- current epoch; used in the file name '%s_net_%s.pth' % (epoch, name)
         """
+        if latest:
+            save_filename = self.save_dir / "latest_checkpoint.pth"
+        else:
+            save_filename = self.save_dir / f"{epoch}_checkpoint.pth"
+        dict_to_save = {"epoch": epoch}
         for name in self.model_names:
             if isinstance(name, str):
-                save_filename = '%s_net_%s.pth' % (epoch, name)
+                net = getattr(self, 'net' + name)
+                dict_to_save[f"net_{name}"] = net.state_dict()
+        for i, optimizer in enumerate(self.optimizers):
+            dict_to_save[f"optimizer_{self.model_names[i]}"] = optimizer.state_dict()
+            dict_to_save[f"scheduler_{self.model_names[i]}"] = self.schedulers[i].state_dict()
+        torch.save(dict_to_save, save_filename)
+
+    def save_optimizers(self, epoch):
+        """Save all the networks to the disk.
+
+        Parameters:
+            epoch (int) -- current epoch; used in the file name '%s_net_%s.pth' % (epoch, name)
+        """
+        for name in self.optimizers:
+            if isinstance(name, str):
+                save_filename = '%s_optimizer_%s.pth' % (epoch, name)
                 save_path = os.path.join(self.save_dir, save_filename)
                 net = getattr(self, 'net' + name)
 

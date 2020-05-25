@@ -56,11 +56,11 @@ class SegmentationModel(BaseModel):
             self.model_names = ['G']
         # define networks (both generator and discriminator)
         self.netG = networks.define_G(opt.input_nc, opt.output_nc, opt.ngf, opt.netG, opt.norm,
-                                      not opt.no_dropout, opt.init_type, opt.init_gain, self.gpu_ids)
+                                      opt.init_type, opt.init_gain, self.gpu_ids)
         self.num_classes = opt.output_nc
         if self.isTrain:
             # define loss functions
-            self.criterion = torch.nn.CrossEntropyLoss(ignore_index=255)
+            self.criterion = torch.nn.CrossEntropyLoss(ignore_index=255, weight=opt.class_weights)
             # initialize optimizers; schedulers will be automatically created by function <BaseModel.setup>.
             self.optimizer_G = torch.optim.Adam(self.netG.parameters(), lr=opt.lr, weight_decay=1e-5)
             self.optimizers.append(self.optimizer_G)
@@ -76,6 +76,7 @@ class SegmentationModel(BaseModel):
         self.input_image = input['A'].to(self.device)
         self.label = input['B'].to(self.device)
         self.image_paths = None
+
     def compute_visuals(self):
         self.rgb = denormalize(self.input_image[0]).unsqueeze(dim=0)
         self.prediction_img = mask_to_img(torch.argmax(self.prediction.cpu(), dim=1)[0])
@@ -97,14 +98,7 @@ class SegmentationModel(BaseModel):
         self.optimizer_G.zero_grad()        # set G's gradients to zero
         self.backward_G()                   # calculate graidents for G
         self.optimizer_G.step()             # udpate G's weights
-        ## Todo: Track training/validation loss
-        ## Todo: Add class weights
-        ## Todo: Inference script for iou, etc
-        ## Todo: Argument parser fix
         ## Todo: Change network architecture
-        ## Todo: Continue training script
-        ## Todo: Store image on the correct place
-        ## TOdo: Create train/val loader for evalation
 
 
 

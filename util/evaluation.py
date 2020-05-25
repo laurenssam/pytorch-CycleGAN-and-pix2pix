@@ -51,6 +51,8 @@ def run_inference(data_loader, model, print_freq=3):
         prediction_argmax = torch.argmax(prediction.cpu(), dim=1)
         predictions.append(prediction_argmax)
         labels.append(label.cpu())
+        if i == 2:
+            break
         assert label.shape != prediction_argmax, \
             f"shape of label and prediction are not the same (label/pred): {label.shape}/{prediction_argmax.shape}"
         if i > 0 and i % print_freq == 0:
@@ -58,7 +60,7 @@ def run_inference(data_loader, model, print_freq=3):
     model.netG.train()
     predictions = torch.cat(predictions, dim=0)
     labels= torch.cat(labels, dim=0)
-    predictions[labels == 255] = 255
+    predictions[labels == Cityscapes.ignore_index] = Cityscapes.ignore_index
     return predictions.numpy(), labels.numpy(), np.mean(losses)
 
 
@@ -85,5 +87,7 @@ def evaluate(train_loader, val_loader, model):
     print(f"Loss: {train_loss}/{val_loss}")
     for i in range(len(train_stats['Class IoU'])):
         print(f"IoU for {Cityscapes.train_id_to_name[i]}: {train_stats['Class IoU'][i]}/{val_stats['Class IoU'][i]}")
+    model.plot_loss()
+    model.plot_iou()
 
 
