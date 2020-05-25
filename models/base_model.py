@@ -46,6 +46,7 @@ class BaseModel(ABC):
         self.losses = []
         self.ious = []
         self.metric = 0  # used for learning rate policy 'plateau'
+        print("Running device is: ", self.device)
 
     @staticmethod
     def modify_commandline_options(parser, is_train):

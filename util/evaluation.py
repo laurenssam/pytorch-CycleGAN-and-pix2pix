@@ -60,7 +60,7 @@ def run_inference(data_loader, model, print_freq=3):
     model.netG.train()
     predictions = torch.cat(predictions, dim=0)
     labels= torch.cat(labels, dim=0)
-    predictions[labels == Cityscapes.ignore_index] = Cityscapes.ignore_index
+    predictions[labels == 255] =255
     return predictions.numpy(), labels.numpy(), np.mean(losses)
 
 
@@ -71,6 +71,7 @@ def get_prediction(input_image, model):
 
 
 def evaluate(train_loader, val_loader, model):
+    train_id_to_name = {cls[2]:cls[0] for cls in Cityscapes.classes if not cls[6]}
     train_predictions, train_labels, train_loss = run_inference(train_loader, model)
     train_stats = scores(train_predictions, train_labels, model.num_classes)
     del train_predictions, train_labels
@@ -86,7 +87,7 @@ def evaluate(train_loader, val_loader, model):
     print(f"Pixel acc: {train_stats['Pixel Accuracy']}/{val_stats['Pixel Accuracy']}")
     print(f"Loss: {train_loss}/{val_loss}")
     for i in range(len(train_stats['Class IoU'])):
-        print(f"IoU for {Cityscapes.train_id_to_name[i]}: {train_stats['Class IoU'][i]}/{val_stats['Class IoU'][i]}")
+        print(f"IoU for {train_id_to_name[i]}: {train_stats['Class IoU'][i]}/{val_stats['Class IoU'][i]}")
     model.plot_loss()
     model.plot_iou()
 
