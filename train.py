@@ -39,7 +39,7 @@ if __name__ == '__main__':
     else:
         root_path = Path("/Users/laurenssamson/Documents/Projects/data/Cityscapes/leftImg8bit_trainvaltest")
     training_loader, val_loader, train_eval_loader = get_loaders_cityscapes(root_path, opt)
-    opt.class_weights = calculate_class_weights(val_loader, opt.output_nc, opt.alpha)
+    opt.class_weights = calculate_class_weights(val_loader, opt.output_nc)
     model = create_model(opt)      # create a model given opt.model and other options
     model.setup(opt)               # regular setup: load and print networks; create schedulers
     visualizer = Visualizer(opt)   # create a visualizer that display/save images and plots

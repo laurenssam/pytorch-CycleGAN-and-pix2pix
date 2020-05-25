@@ -32,8 +32,8 @@ def tensor2im(input_image, imtype=np.uint8):
         image_numpy = input_image
     return image_numpy.astype(imtype)
 
-def calculate_class_weights(val_loader, num_classes, alpha):
-    file_path = Path(f"classweight_{alpha}.p")
+def calculate_class_weights(val_loader, num_classes, ):
+    file_path = Path("classweights.p")
     if file_path.exists():
         return pickle.load(open(file_path, "rb"))
     counter = {cls_idx: 0 for cls_idx in range(num_classes)}
@@ -45,7 +45,7 @@ def calculate_class_weights(val_loader, num_classes, alpha):
             counter[cls_idx] += count_cls
             pixel_count += count_cls
         count += 1
-    weights = [(1./(float(count)/pixel_count))**(alpha) for count in counter.values()]
+    weights = [(1./(float(count)/pixel_count)) for count in counter.values()]
     weights = torch.FloatTensor(weights)
     pickle.dump(weights, open(file_path, "wb"))
     return weights

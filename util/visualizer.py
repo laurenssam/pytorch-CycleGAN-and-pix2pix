@@ -76,7 +76,7 @@ class Visualizer():
                 self.create_visdom_connections()
 
         if self.use_html:  # create an HTML object at <checkpoints_dir>/web/; images will be saved under <checkpoints_dir>/web/images/
-            self.web_dir = Path(opt.checkpoints_dir + opt.name + 'web')
+            self.web_dir = Path(opt.checkpoints_dir + "/" + opt.name + '/web')
             if opt.run_colab:
                 self.web_dir = Path("/content/gdrive/My Drive/Segmentation") / self.web_dir
             self.img_dir = os.path.join(self.web_dir, 'images')
