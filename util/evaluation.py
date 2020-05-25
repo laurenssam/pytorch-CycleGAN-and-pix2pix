@@ -93,7 +93,7 @@ def evaluate(train_loader, val_loader, model):
 
 
     val_scores, val_loss = run_inference(val_loader, model)
-    val_stats = train_scores.get_scores()
+    val_stats = val_scores.get_scores()
 
     model.store_losses((train_loss, val_loss))
     model.store_ious((train_stats['Mean IoU'], val_stats['Mean IoU']))
