@@ -33,6 +33,7 @@ def joint_transform_val(input_image, mask):
     input_image = TF.normalize(input_image, [0.28689554, 0.32513303, 0.28389177], [0.18696375, 0.19017339, 0.18720214])
 
     mask = torch.from_numpy(np.array(mask, dtype=np.int32)).long()
+
     for cls in Cityscapes.classes:
         mask[mask == cls[1]] = cls[2]  ## map id to train_id
     return input_image, mask
