@@ -67,6 +67,7 @@ def run_inference(data_loader, model, print_freq=50):
             f"shape of label and prediction are not the same (label/pred): {label.shape}/{prediction_argmax.shape}"
         if i > 0 and i % print_freq == 0:
             print(f"Finished {i}/{len(data_loader)}")
+    print(f"Finished {len(data_loader)}/{len(data_loader)}")
     model.netG.train()
     return scores, np.mean(losses)
 
