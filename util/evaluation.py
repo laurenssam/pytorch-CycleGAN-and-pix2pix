@@ -46,6 +46,7 @@ def run_inference(data_loader, model, print_freq=3):
     loss_function = model.criterion
     losses = []
     for i, (input_image, label) in enumerate(data_loader):
+        input_image, label = input_image.to(model.device), label.to(model.device)
         prediction = get_prediction(input_image, model)
         losses.append(calculate_loss(prediction, label, loss_function))
         prediction_argmax = torch.argmax(prediction.cpu(), dim=1)
