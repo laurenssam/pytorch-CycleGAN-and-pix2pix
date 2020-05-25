@@ -52,8 +52,6 @@ def run_inference(data_loader, model, print_freq=3):
         prediction_argmax = torch.argmax(prediction.cpu(), dim=1)
         predictions.append(prediction_argmax)
         labels.append(label.cpu())
-        if i == 2:
-            break
         assert label.shape != prediction_argmax, \
             f"shape of label and prediction are not the same (label/pred): {label.shape}/{prediction_argmax.shape}"
         if i > 0 and i % print_freq == 0:
