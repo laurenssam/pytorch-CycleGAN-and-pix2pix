@@ -55,7 +55,7 @@ class SegmentationModel(BaseModel):
         else:  # during test time, only load G
             self.model_names = ['G']
         # define networks (both generator and discriminator)
-        self.netG = networks.define_G(opt.input_nc, opt.output_nc, opt.ngf, opt.netG, opt.norm,
+        self.netG = networks.define_G(opt.input_nc, opt.output_nc, opt.ngf, opt.netG, opt.backbone, opt.norm,
                                       opt.init_type, opt.init_gain, self.gpu_ids)
         self.num_classes = opt.output_nc
         if self.isTrain:
