@@ -39,7 +39,7 @@ class BaseOptions():
         parser.add_argument('--init_gain', type=float, default=0.02, help='scaling factor for normal, xavier and orthogonal.')
         # dataset parameters
         parser.add_argument('--batch_size', type=int, default=2, help='input batch size')
-        parser.add_argument('--alpha', type=int, default=0.5, help='weight for class weighting')
+        parser.add_argument('--alpha', type=float, default=0., help='weight for class weighting')
         parser.add_argument('--crop_size', type=int, default=512, help='then crop to this size')
         parser.add_argument('--display_winsize', type=int, default=256, help='display window size for both visdom and HTML')
         # additional parameters
