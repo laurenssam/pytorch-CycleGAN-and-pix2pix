@@ -80,10 +80,11 @@ def get_prediction(input_image, model):
 def evaluate(train_loader, val_loader, model):
     train_id_to_name = {cls[2]:cls[0] for cls in Cityscapes.classes if not cls[6]}
 
+    print("Evaluating the training set:")
     train_scores, train_loss = run_inference(train_loader, model)
     train_stats = train_scores.get_scores()
 
-
+    print("Evaluating the validation set:")
     val_scores, val_loss = run_inference(val_loader, model)
     val_stats = val_scores.get_scores()
 
