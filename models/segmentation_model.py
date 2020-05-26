@@ -56,7 +56,7 @@ class SegmentationModel(BaseModel):
             self.model_names = ['G']
         # define networks (both generator and discriminator)
         self.netG = networks.define_G(opt.input_nc, opt.output_nc, opt.ngf, opt.netG, opt.backbone, opt.norm,
-                                      opt.init_type, opt.init_gain, self.gpu_ids)
+                                      opt.init_type, opt.init_gain, self.gpu_ids).to(self.device)
         self.num_classes = opt.output_nc
         if self.isTrain:
             # define loss functions
