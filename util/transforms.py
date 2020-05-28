@@ -33,6 +33,9 @@ def joint_transform_train(crop_size, context_info):
     return augmentations
 
 def joint_transform_val(input_image, mask, context_info):
+    height, width = input_image.size
+    input_image = TF.resize(input_image, width // 2)
+    mask = TF.resize(mask, (width // 2, height // 2), Image.NEAREST)
     input_image = TF.to_tensor(input_image)
     input_image = TF.normalize(input_image, [0.28689554, 0.32513303, 0.28389177], [0.18696375, 0.19017339, 0.18720214])
 
