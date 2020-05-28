@@ -9,6 +9,8 @@ from torch.optim import lr_scheduler
 # Helper Functions
 ###############################################################################
 from models.deeplab.deeplab import DeepLab
+
+from models.deeplab.deeplab_resnet import DeepLabv3_plus
 from models.tiramisu.tiramisu import FCDenseNet57
 
 
@@ -154,7 +156,7 @@ def define_G(input_nc, output_nc, ngf, netG, backbone='resnet', norm='batch', in
     if netG == 'resnet_9blocks':
         net = ResnetGenerator(input_nc, output_nc, ngf, norm_layer=norm_layer, n_blocks=9)
     elif netG == 'deeplab':
-        net = DeepLab(backbone=backbone, num_classes=output_nc, pretrained=pretrained)
+        net = DeepLabv3_plus(nInputChannels=input_nc, n_classes=output_nc, pretrained=pretrained)
         return net
     elif netG == 'resnet_6blocks':
         net = ResnetGenerator(input_nc, output_nc, ngf, norm_layer=norm_layer, n_blocks=6)
