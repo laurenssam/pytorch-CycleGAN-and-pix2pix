@@ -16,7 +16,7 @@ def get_loaders_cityscapes(root_path, opt):
     validation_dataset = Cityscapes(root_path, split='val', mode='fine',
                          target_type='semantic',
                          transforms=joint_transform_val)
-    val_loader = DataLoader(validation_dataset, batch_size=opt.batch_size, shuffle=False)
+    val_loader = DataLoader(validation_dataset, batch_size=opt.batch_size_val, shuffle=False)
     val_dataset_size = len(validation_dataset)    # get the number of images in the dataset.
     print('The number of validation images = %d' % val_dataset_size)
 
@@ -24,5 +24,5 @@ def get_loaders_cityscapes(root_path, opt):
                          target_type='semantic',
                          transforms=joint_transform_val)
     train_eval_set.images = train_eval_set.images[:500]
-    train_eval_loader = DataLoader(train_eval_set, batch_size=opt.batch_size, shuffle=False)
+    train_eval_loader = DataLoader(train_eval_set, batch_size=opt.batch_size_val, shuffle=False)
     return training_loader, val_loader, train_eval_loader
