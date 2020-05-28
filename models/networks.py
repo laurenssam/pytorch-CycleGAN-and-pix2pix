@@ -3,15 +3,14 @@ import torch.nn as nn
 from torch.nn import init
 import functools
 from torch.optim import lr_scheduler
-
+from models.deeplab.deeplab_resnet import DeepLabv3_plus
+from models.tiramisu.tiramisu import FCDenseNet57
 
 ###############################################################################
 # Helper Functions
 ###############################################################################
-from models.deeplab.deeplab import DeepLab
 
-from models.deeplab.deeplab_resnet import DeepLabv3_plus
-from models.tiramisu.tiramisu import FCDenseNet57
+
 
 
 class Identity(nn.Module):
