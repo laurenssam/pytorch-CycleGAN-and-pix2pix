@@ -72,6 +72,7 @@ class ResNet(nn.Module):
         self._init_weight()
 
         if pretrained:
+            print("Loading pretrained resnet model")
             self._load_pretrained_model()
 
     def _make_layer(self, block, planes, blocks, stride=1, dilation=1, BatchNorm=None):
