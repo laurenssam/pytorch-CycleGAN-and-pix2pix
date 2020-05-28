@@ -6,7 +6,7 @@ from torchvision.datasets import Cityscapes
 import random
 from copy import deepcopy
 
-def joint_transform_train(crop_size, context_info):
+def joint_transform_train(crop_size):
     def augmentations(input_image, mask):
         height, width = input_image.size
         new_height, new_width = height // 2, width // 2
@@ -33,10 +33,11 @@ def joint_transform_train(crop_size, context_info):
         return image, mask
     return augmentations
 
-def joint_transform_val(input_image, mask, context_info):
+def joint_transform_val(input_image, mask):
     height, width = input_image.size
-    input_image = TF.resize(input_image, width // 2)
-    mask = TF.resize(mask, (width // 2, height // 2), Image.NEAREST)
+    new_height, new_width = height // 2, width // 2
+    input_image = TF.resize(input_image, new_width)
+    mask = TF.resize(mask, (new_width, new_height), Image.NEAREST)
     input_image = TF.to_tensor(input_image)
     input_image = TF.normalize(input_image, [0.28689554, 0.32513303, 0.28389177], [0.18696375, 0.19017339, 0.18720214])
 

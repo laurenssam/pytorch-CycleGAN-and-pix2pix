@@ -6,7 +6,7 @@ from util.transforms import joint_transform_train, joint_transform_val
 def get_loaders_cityscapes(root_path, opt):
     training_dataset = Cityscapes(root_path, split='train', mode='fine',
                          target_type='semantic',
-                         transforms=joint_transform_train(opt.crop_size, opt.add_context))
+                         transforms=joint_transform_train(opt.crop_size))
     opt.output_nc = len([1 for class_name in Cityscapes.classes if not class_name[-2]])
     print("Number of classes: ", opt.output_nc)
     training_loader = DataLoader(training_dataset, batch_size=opt.batch_size, shuffle=True, num_workers=4)
