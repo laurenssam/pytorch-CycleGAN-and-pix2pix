@@ -82,7 +82,7 @@ class SegmentationModel(BaseModel):
     def compute_visuals(self):
         self.rgb = denormalize(self.input_image[0]).unsqueeze(dim=0)
         self.prediction_img = torch.argmax(self.prediction.cpu(), dim=1)[0]
-        self.prediction_img[self.label == 255] = 255
+        self.prediction_img[self.label[0] == 255] = 255
         self.prediction_img = mask_to_img(self.prediction_img)
         self.label_img = mask_to_img(self.label.cpu()[0])
 
