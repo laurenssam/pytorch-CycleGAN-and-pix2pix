@@ -9,6 +9,7 @@ from PIL import Image
 import os
 from torchvision.datasets import Cityscapes
 import pickle
+import torch.functional as F
 
 
 def tensor2im(input_image, imtype=np.uint8):
@@ -31,6 +32,27 @@ def tensor2im(input_image, imtype=np.uint8):
     else:  # if it is a numpy array, do nothing
         image_numpy = input_image
     return image_numpy.astype(imtype)
+
+def fakenize_real(label, fake, num_classes):
+    batch_size, _, height, width = fake.shape
+    max_fake = torch.max(fake, dim=1)[0].unsqueeze(dim=1) # N * 1 * H *  W
+    max_fake = max_fake.repeat(1, num_classes, 1, 1) # N * C * H * W
+    ignore_mask = label == 255
+    label[ignore_mask] = 0
+    label_one_hot = torch.nn.functional.one_hot(label, num_classes).permute(0, 3, 1, 2) # N * C * H * W
+    fake_label_permuted = torch.zeros_like(fake)
+    for i in range(batch_size):
+        fake_label_permuted[i, :] = fake[i, torch.randperm(num_classes)]
+    values_to_be_swapped = torch.max(fake_label_permuted * label_one_hot, dim=1)[0]
+    values_to_be_swapped = values_to_be_swapped.unsqueeze(dim=1).repeat(1, num_classes, 1, 1)
+    current_max_indices = fake_label_permuted == max_fake
+    fake_label_permuted[current_max_indices] = 0
+    fake_label_permuted += current_max_indices * values_to_be_swapped
+
+    fake_label_permuted *= (1 - label_one_hot)
+    fake_label_permuted += label_one_hot * max_fake
+
+    return fake_label_permuted
 
 def calculate_class_weights(val_loader, num_classes, ):
     file_path = Path("classweights.p")
