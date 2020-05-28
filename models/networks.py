@@ -9,6 +9,7 @@ from torch.optim import lr_scheduler
 # Helper Functions
 ###############################################################################
 from models.deeplab.deeplab import DeepLab
+from models.tiramisu.tiramisu import FCDenseNet57
 
 
 class Identity(nn.Module):
@@ -207,6 +208,8 @@ def define_D(input_nc, ndf, netD, n_layers_D=3, norm='batch', init_type='normal'
         net = PixelDiscriminator(input_nc, ndf, norm_layer=norm_layer)
     elif netD == 'resnet':
         net = ResnetGenerator(22, 1, ndf, norm_layer=norm_layer, n_blocks=6)
+    elif netD == 'tiramisu':
+        net = FCDenseNet57(22, 1)
     else:
         raise NotImplementedError('Discriminator model name [%s] is not recognized' % netD)
     return init_net(net, init_type, init_gain, gpu_ids)
