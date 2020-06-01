@@ -5,7 +5,7 @@ import torch.nn.functional as F
 import torch.utils.model_zoo as model_zoo
 from .batchnorm import SynchronizedBatchNorm2d
 
-BatchNorm2d = SynchronizedBatchNorm2d
+BatchNorm2d = torch.nn.BatchNorm2d
 
 class SeparableConv2d(nn.Module):
     def __init__(self, inplanes, planes, kernel_size=3, stride=1, padding=0, dilation=1, bias=False):
