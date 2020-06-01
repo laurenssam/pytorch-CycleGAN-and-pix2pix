@@ -5,7 +5,7 @@ import torch.nn.functional as F
 import torch.utils.model_zoo as model_zoo
 from .batchnorm import SynchronizedBatchNorm2d
 
-BatchNorm2d = SynchronizedBatchNorm2d
+BatchNorm2d = torch.nn.BatchNorm2d
 
 class Bottleneck(nn.Module):
     expansion = 4
