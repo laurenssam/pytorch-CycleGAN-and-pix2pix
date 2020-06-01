@@ -10,6 +10,7 @@ import os
 from torchvision.datasets import Cityscapes
 import pickle
 import torch.functional as F
+from tqdm import tqdm
 
 
 def tensor2im(input_image, imtype=np.uint8):
@@ -54,21 +55,48 @@ def fakenize_real(label, fake, num_classes):
 
     return fake_label_permuted
 
-def calculate_class_weights(val_loader, num_classes, ):
+# def calculate_class_weights(val_loader, num_classes):
+#     file_path = Path("classweights.p")
+#     if file_path.exists():
+#         return pickle.load(open(file_path, "rb"))
+#     counter = {cls_idx: 0 for cls_idx in range(num_classes)}
+#     pixel_count = 0
+#     count = 0
+#     for _, mask in val_loader:
+#         for cls_idx in range(num_classes):
+#             count_cls = (mask == cls_idx).sum().item()
+#             counter[cls_idx] += count_cls
+#             pixel_count += count_cls
+#         count += 1
+#     weights = [(1./(float(count)/pixel_count)) for count in counter.values()]
+#     weights = torch.FloatTensor(weights)
+#     pickle.dump(weights, open(file_path, "wb"))
+#     return weights
+
+def calculate_class_weights(dataloader, num_classes):
+    # Create an instance from the data loader
     file_path = Path("classweights.p")
     if file_path.exists():
         return pickle.load(open(file_path, "rb"))
-    counter = {cls_idx: 0 for cls_idx in range(num_classes)}
-    pixel_count = 0
-    count = 0
-    for _, mask in val_loader:
-        for cls_idx in range(num_classes):
-            count_cls = (mask == cls_idx).sum().item()
-            counter[cls_idx] += count_cls
-            pixel_count += count_cls
-        count += 1
-    weights = [(1./(float(count)/pixel_count)) for count in counter.values()]
-    weights = torch.FloatTensor(weights)
+    print("Calculating class weights")
+    z = np.zeros((num_classes,))
+    # Initialize tqdm
+    tqdm_batch = tqdm(dataloader)
+    print('Calculating classes weights')
+    for _, y in tqdm_batch:
+        y = y.detach().cpu().numpy()
+        mask = (y >= 0) & (y < num_classes)
+        labels = y[mask].astype(np.uint8)
+        count_l = np.bincount(labels, minlength=num_classes)
+        z += count_l
+    tqdm_batch.close()
+    total_frequency = np.sum(z)
+    class_weights = []
+    for frequency in z:
+        class_weight = 1 / (np.log(1.02 + (frequency / total_frequency)))
+        class_weights.append(class_weight)
+    ret = np.array(class_weights)
+    weights = torch.FloatTensor(ret)
     pickle.dump(weights, open(file_path, "wb"))
     return weights
 
